@@ -24,7 +24,7 @@ def read(*names, **kwargs):
 
 setup(
     name="kedro-argo",
-    version="0.0.0",
+    version="version='0.0.1'",
     license="BSD-3-Clause",
     description="Converting kedro pipelines to argo pipelines.",
     long_description="%s\n%s"
