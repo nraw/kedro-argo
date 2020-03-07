@@ -1,4 +1,11 @@
 virtualenv>=16.6.0
 pip>=19.1.1
 setuptools>=18.0.1
+pytest-cov
 six>=1.12.0
+
+Click==7.0
+Jinja2==2.10
+kedro==0.15.5
+matrix==2.0.1
+PyYAML==5.3
