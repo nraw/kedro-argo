@@ -14,8 +14,14 @@ Why does this file exist, and why not put this in __main__?
 
   Also see (1) from http://click.pocoo.org/5/setuptools/#setuptools-integration
 """
+import os
+import pathlib
+import shutil
+
 import click
-from kedro.cli import get_project_context
+import pkg_resources
+import yaml
+from kedro import cli
 
 
 @click.group(name="ARGO")
@@ -26,13 +32,11 @@ def commands():
 
 @commands.command("argo")
 @click.argument("image", required=True)
-def argokedro(image):
+@click.argument("templates_folder")
+def argokedro(image, templates_folder="templates"):
     """Creates argo pipeline
     https://get-ytt.io/#playground
     """
-    from kedro import cli
-    import yaml
-
     pc = cli.get_project_context()
     dependencies = pc.pipeline.node_dependencies
     deps_dict = [
@@ -41,6 +45,12 @@ def argokedro(image):
     ]
     nodes = pc.pipeline.nodes
     tags = {node.name: node.tags for node in nodes}
+    yaml_pipe = generate_yaml(deps_dict, tags, image)
+    save_yamls(yaml_pipe, templates_folder)
+    print(yaml_pipe)
+
+
+def generate_yaml(deps_dict, tags, image):
     for dep_dict in deps_dict:
         node_tags = tags[dep_dict["name"]]
         tag_dict = parse_tags(node_tags)
@@ -48,7 +58,7 @@ def argokedro(image):
     pipe_dict = {"steps": deps_dict, "image": image}
     yaml_pipe = yaml.dump(pipe_dict).replace("'", "")
     yaml_pipe = "#@data/values\n---\n" + yaml_pipe
-    print(yaml_pipe)
+    return yaml_pipe
 
 
 def parse_tags(node_tags, sep="."):
@@ -63,3 +73,12 @@ def parse_tags(node_tags, sep="."):
         return tag_dict
     else:
         return {}
+
+
+def save_yamls(yaml_pipe, templates_folder):
+    os.mkdir(templates_folder)
+    kedro_yaml_file = os.path.join(templates_folder, "kedro.yaml")
+    pathlib.Path(kedro_yaml_file).write_text(yaml_pipe)
+    path = "templates/argo_template.yaml"
+    template_file = pkg_resources.resource_filename(__name__, path)
+    shutil.copy2(template_file, templates_folder)

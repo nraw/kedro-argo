@@ -82,7 +82,7 @@ setup(
         #   ':python_version=="2.6"': ['argparse'],
     },
     entry_points={
-        "console_scripts": ["kedro-argo = kedro_argo.cli:main"],
-        "kedro.argo": ["kedroargo = src.kedro_argo:commands"],
+        "console_scripts": ["kedro-argo = kedro_argo.cli:commands"],
+        "kedro.project_commands": ["argo = kedro_argo.cli:commands"],
     },
 )
