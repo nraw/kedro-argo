@@ -1,12 +1,11 @@
 
 from click.testing import CliRunner
 
-from kedro_argo.cli import main
+from kedro_argo.cli import commands
 
 
 def test_main():
     runner = CliRunner()
-    result = runner.invoke(main, [])
+    result = runner.invoke(commands, [])
 
-    assert result.output == '()\n'
     assert result.exit_code == 0
