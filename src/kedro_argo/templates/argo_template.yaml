@@ -14,7 +14,7 @@ spec:
     container:
       image: #@ data.values.image
       command: [sh, -c]
-      args: ["kedro run -n {{inputs.parameters.kedro_node}}"]
+      args: ["kedro run -n '{{inputs.parameters.kedro_node}}'"]
   - name: dag
     dag:
       tasks:
