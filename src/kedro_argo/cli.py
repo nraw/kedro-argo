@@ -14,9 +14,9 @@ Why does this file exist, and why not put this in __main__?
 
   Also see (1) from http://click.pocoo.org/5/setuptools/#setuptools-integration
 """
-import os
-import pathlib
+import logging
 import shutil
+from pathlib import Path
 
 import click
 import pkg_resources
@@ -32,8 +32,9 @@ def commands():
 
 @commands.command("argo")
 @click.argument("image", required=True)
-@click.argument("templates_folder")
-def argokedro(image, templates_folder="templates"):
+@click.argument("templates_folder", default="templates")
+@click.option("--force-template", default=False)
+def argokedro(image, templates_folder, force_template):
     """Creates argo pipeline
     https://get-ytt.io/#playground
     """
@@ -46,8 +47,23 @@ def argokedro(image, templates_folder="templates"):
     nodes = pc.pipeline.nodes
     tags = {node.name: node.tags for node in nodes}
     yaml_pipe = generate_yaml(deps_dict, tags, image)
-    save_yamls(yaml_pipe, templates_folder)
-    print(yaml_pipe)
+    save_yaml(yaml_pipe, templates_folder)
+    logging.info("Templates saved in `templates` folder")
+    print(
+        """
+You can now run:
+
+$ ytt -f templates > argo.yaml
+
+or if you prefer in Docker:
+
+$ docker run --rm -it --name ytt -v $(pwd)/templates:/templates gerritk/ytt:latest -f /templates > argo.yaml
+
+and finally
+
+$ argo submit -f argo.yaml
+"""
+    )
 
 
 def generate_yaml(deps_dict, tags, image):
@@ -75,10 +91,15 @@ def parse_tags(node_tags, sep="."):
         return {}
 
 
-def save_yamls(yaml_pipe, templates_folder):
-    os.mkdir(templates_folder)
-    kedro_yaml_file = os.path.join(templates_folder, "kedro.yaml")
-    pathlib.Path(kedro_yaml_file).write_text(yaml_pipe)
-    path = "templates/argo_template.yaml"
-    template_file = pkg_resources.resource_filename(__name__, path)
-    shutil.copy2(template_file, templates_folder)
+def save_yaml(yaml_pipe, templates_folder):
+    Path(templates_folder).mkdir(parents=True, exist_ok=True)
+    Path(templates_folder + "/kedro.yaml").write_text(yaml_pipe)
+
+
+def get_template(templates_folder, force_template):
+    template_filename = "argo_template.yaml"
+    source_file_relative = Path("templates/" + template_filename)
+    source_file = pkg_resources.resource_filename(__name__, source_file_relative)
+    target_file = Path(templates_folder + "/argo_template.yaml")
+    if not target_file.exists() or force_template:
+        shutil.copy2(source_file, templates_folder)

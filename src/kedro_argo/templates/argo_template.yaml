@@ -1,9 +1,4 @@
 #@ load("@ytt:data", "data")
-
-#@ def param(name):
-#@   return [{name: kedro_node, value: "+name+"}]
-#@ end
-
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
@@ -23,9 +18,11 @@ spec:
   - name: dag
     dag:
       tasks:
-      #@ for/end echo in data.values.steps:
-      - name: #@ echo.name
+      #@ for/end step in data.values.steps:
+      - name: #@ step.name
         template: kedro
-        dependencies: #@ echo.dep
+        dependencies: #@ step.dep
         arguments:
-          parameters: #@ param(echo.name)
+          parameters:
+          - name: kedro_node
+            value: #@ step.name

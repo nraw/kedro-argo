@@ -24,7 +24,7 @@ def read(*names, **kwargs):
 
 setup(
     name="kedro-argo",
-    version="version='0.0.2'",
+    version="0.0.2",
     license="BSD-3-Clause",
     description="Converting kedro pipelines to argo pipelines.",
     long_description="%s\n%s"
@@ -55,7 +55,6 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: Implementation :: CPython",
-        "Programming Language :: Python :: Implementation :: PyPy",
         # uncomment if you test on these interpreters:
         # 'Programming Language :: Python :: Implementation :: IronPython',
         # 'Programming Language :: Python :: Implementation :: Jython',
@@ -70,7 +69,7 @@ setup(
     keywords=[
         # eg: 'keyword1', 'keyword2', 'keyword3',
     ],
-    python_requires="!=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
+    python_requires=">=3.6, <3.8",
     install_requires=[
         "click",
         "kedro",
