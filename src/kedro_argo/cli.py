@@ -61,7 +61,7 @@ $ docker run --rm -it --name ytt -v $(pwd)/templates:/templates gerritk/ytt:late
 
 and finally
 
-$ argo submit -f argo.yaml
+$ argo submit --watch argo.yaml
 """
     )
 

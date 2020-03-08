@@ -1,5 +1,5 @@
 ========
-Overview
+Kedro-Argo
 ========
 
 .. start-badges
@@ -79,6 +79,43 @@ You can also install the in-development version with::
 
     pip install https://github.com/nraw/kedro-argo/archive/master.zip
 
+Requirements
+============
+
+To be used with Kedro, so it's assumed this package is used with a Kedro project.
+An image name is needed. You can generate one with Kedro-docker.
+Argo CLI is needed for the deployment step.
+As the workflow will be in Argo, all datasets should be somehow passed between containers or else the pipeline will fail.
+
+
+Usage
+============
+
+When installed, argo should be visible under your kedro commands
+::
+
+    kedro
+
+Get the kedro.yaml and the template file by running
+::
+
+   kedro argo IMAGE_NAME
+
+
+You can now run:
+::
+
+   ytt -f templates > argo.yaml
+
+or if you prefer in Docker:
+::
+
+   docker run --rm -it --name ytt -v $(pwd)/templates:/templates gerritk/ytt:latest -f /templates > argo.yaml
+
+and finally
+::
+
+   argo submit --watch argo.yaml
 
 Documentation
 =============
