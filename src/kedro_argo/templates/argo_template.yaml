@@ -19,9 +19,12 @@ spec:
     dag:
       tasks:
       #@ for/end step in data.values.steps:
-      - name: #@ step.name
+      - name: #@ step.name.replace("_", "-")
         template: kedro
-        dependencies: #@ step.dep
+        dependencies:
+        #@ for/end dep in step.dep:
+        - #@ dep.replace("_", "-")
+
         arguments:
           parameters:
           - name: kedro_node
