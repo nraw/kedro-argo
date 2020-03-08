@@ -25,20 +25,6 @@ matrix:
     - env:
         - TOXENV=py37-nocov
       python: '3.7'
-    - env:
-        - TOXENV=pypy-cover,codecov
-      python: 'pypy'
-    - env:
-        - TOXENV=pypy-nocov
-      python: 'pypy'
-    - env:
-        - TOXENV=pypy3-cover,codecov
-        - TOXPYTHON=pypy3
-      python: 'pypy3'
-    - env:
-        - TOXENV=pypy3-nocov
-        - TOXPYTHON=pypy3
-      python: 'pypy3'
 before_install:
   - python --version
   - uname -a
