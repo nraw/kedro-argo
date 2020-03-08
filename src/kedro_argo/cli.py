@@ -1,4 +1,5 @@
 import logging
+import re
 import shutil
 from pathlib import Path
 
@@ -19,15 +20,16 @@ def commands():
 @click.argument("templates_folder", default="templates")
 @click.option("--force-template", default=False)
 def argokedro(image, templates_folder, force_template):
-    """Creates argo pipeline
-    https://get-ytt.io/#playground
+    """Creates an argo pipeline yaml
+    - https://get-ytt.io/#playground
     """
     pc = cli.get_project_context()
     pipeline = pc.pipeline
     dependencies = pipeline.node_dependencies
     deps_dict = get_deps_dict(dependencies)
     tags = get_tags(pipeline)
-    yaml_pipe = generate_yaml(deps_dict, tags, image)
+    tagged_deps_dict = update_deps_dict_with_tags(deps_dict, tags)
+    yaml_pipe = generate_yaml(tagged_deps_dict, image)
     save_yaml(yaml_pipe, templates_folder)
     copy_template(templates_folder, force_template)
     logging.info("Templates saved in `templates` folder")
@@ -36,25 +38,25 @@ def argokedro(image, templates_folder, force_template):
 
 def get_deps_dict(dependencies):
     deps_dict = [
-        {"name": key.name, "dep": str([val.name for val in vals])}
+        {
+            "name": key.name,
+            "clean_name": clean_name(key.name),
+            "dep": [clean_name(val.name) for val in vals],
+        }
         for key, vals in dependencies.items()
     ]
     return deps_dict
+
+
+def clean_name(name):
+    clean_name = re.sub(r"[\W_]+", "-", name).strip("-")
+    return clean_name
 
 
 def get_tags(pipeline):
     nodes = pipeline.nodes
     tags = {node.name: node.tags for node in nodes}
     return tags
-
-
-def generate_yaml(deps_dict, tags, image):
-    deps_dict = update_deps_dict_with_tags(deps_dict, tags)
-    pipe_dict = {"steps": deps_dict, "image": image}
-    yaml_pipe = yaml.safe_dump(pipe_dict)
-    yaml_pipe = yaml_pipe.replace("'", "")
-    yaml_pipe = "#@data/values\n---\n" + yaml_pipe
-    return yaml_pipe
 
 
 def update_deps_dict_with_tags(deps_dict, tags):
@@ -77,6 +79,13 @@ def parse_tags(node_tags, sep="."):
         return tag_dict
     else:
         return {}
+
+
+def generate_yaml(deps_dict, image):
+    pipe_dict = {"steps": deps_dict, "image": image}
+    yaml_pipe = yaml.safe_dump(pipe_dict)
+    yaml_pipe = "#@data/values\n---\n" + yaml_pipe
+    return yaml_pipe
 
 
 def save_yaml(yaml_pipe, templates_folder):
