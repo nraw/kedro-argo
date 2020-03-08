@@ -1,19 +1,3 @@
-"""
-Module that contains the command line app.
-
-Why does this file exist, and why not put this in __main__?
-
-  You might be tempted to import things from __main__ later, but that will cause
-  problems: the code will get executed twice:
-
-  - When you run `python -mkedro_argo` python will execute
-    ``__main__.py`` as a script. That means there won't be any
-    ``kedro_argo.__main__`` in ``sys.modules``.
-  - When you import __main__ it will get executed again (as a module) because
-    there's no ``kedro_argo.__main__`` in ``sys.modules``.
-
-  Also see (1) from http://click.pocoo.org/5/setuptools/#setuptools-integration
-"""
 import logging
 import shutil
 from pathlib import Path
@@ -39,42 +23,46 @@ def argokedro(image, templates_folder, force_template):
     https://get-ytt.io/#playground
     """
     pc = cli.get_project_context()
-    dependencies = pc.pipeline.node_dependencies
+    pipeline = pc.pipeline
+    dependencies = pipeline.node_dependencies
+    deps_dict = get_deps_dict(dependencies)
+    tags = get_tags(pipeline)
+    yaml_pipe = generate_yaml(deps_dict, tags, image)
+    save_yaml(yaml_pipe, templates_folder)
+    copy_template(templates_folder, force_template)
+    logging.info("Templates saved in `templates` folder")
+    click.secho(FINISHED_MESSAGE)
+
+
+def get_deps_dict(dependencies):
     deps_dict = [
         {"name": key.name, "dep": str([val.name for val in vals])}
         for key, vals in dependencies.items()
     ]
-    nodes = pc.pipeline.nodes
+    return deps_dict
+
+
+def get_tags(pipeline):
+    nodes = pipeline.nodes
     tags = {node.name: node.tags for node in nodes}
-    yaml_pipe = generate_yaml(deps_dict, tags, image)
-    save_yaml(yaml_pipe, templates_folder)
-    logging.info("Templates saved in `templates` folder")
-    print(
-        """
-You can now run:
-
-$ ytt -f templates > argo.yaml
-
-or if you prefer in Docker:
-
-$ docker run --rm -it --name ytt -v $(pwd)/templates:/templates gerritk/ytt:latest -f /templates > argo.yaml
-
-and finally
-
-$ argo submit --watch argo.yaml
-"""
-    )
+    return tags
 
 
 def generate_yaml(deps_dict, tags, image):
+    deps_dict = update_deps_dict_with_tags(deps_dict, tags)
+    pipe_dict = {"steps": deps_dict, "image": image}
+    yaml_pipe = yaml.safe_dump(pipe_dict)
+    yaml_pipe = yaml_pipe.replace("'", "")
+    yaml_pipe = "#@data/values\n---\n" + yaml_pipe
+    return yaml_pipe
+
+
+def update_deps_dict_with_tags(deps_dict, tags):
     for dep_dict in deps_dict:
         node_tags = tags[dep_dict["name"]]
         tag_dict = parse_tags(node_tags)
         dep_dict.update(tag_dict)
-    pipe_dict = {"steps": deps_dict, "image": image}
-    yaml_pipe = yaml.dump(pipe_dict).replace("'", "")
-    yaml_pipe = "#@data/values\n---\n" + yaml_pipe
-    return yaml_pipe
+    return deps_dict
 
 
 def parse_tags(node_tags, sep="."):
@@ -96,10 +84,30 @@ def save_yaml(yaml_pipe, templates_folder):
     Path(templates_folder + "/kedro.yaml").write_text(yaml_pipe)
 
 
-def get_template(templates_folder, force_template):
+def copy_template(templates_folder, force_template):
     template_filename = "argo_template.yaml"
-    source_file_relative = Path("templates/" + template_filename)
-    source_file = pkg_resources.resource_filename(__name__, source_file_relative)
-    target_file = Path(templates_folder + "/argo_template.yaml")
+    source_file = get_source_template_filename(template_filename)
+    target_file = Path(templates_folder) / template_filename
     if not target_file.exists() or force_template:
-        shutil.copy2(source_file, templates_folder)
+        shutil.copy2(str(source_file), str(templates_folder))
+
+
+def get_source_template_filename(template_filename="argo_template.yaml"):
+    source_file_relative = Path("templates") / template_filename
+    source_file = pkg_resources.resource_filename(__name__, str(source_file_relative))
+    return source_file
+
+
+FINISHED_MESSAGE = """
+You can now run:
+
+$ ytt -f templates > argo.yaml
+
+or if you prefer in Docker:
+
+$ docker run --rm -it --name ytt -v $(pwd)/templates:/templates gerritk/ytt:latest -f /templates > argo.yaml
+
+and finally
+
+$ argo submit --watch argo.yaml
+"""
