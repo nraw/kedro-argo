@@ -11,7 +11,7 @@ Overview
       - |docs|
     * - tests
       - | |travis| |appveyor| |requires|
-        | |codecov|
+        | |codecov| |coveralls|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
         | |commits-since|
@@ -34,6 +34,11 @@ Overview
 .. |codecov| image:: https://codecov.io/github/nraw/kedro-argo/coverage.svg?branch=master
     :alt: Coverage Status
     :target: https://codecov.io/github/nraw/kedro-argo
+
+.. |coveralls| image:: https://coveralls.io/repos/github/nraw/argokedro/badge.svg?branch=master
+   :alt: Coveralls Status
+   :target: https://coveralls.io/github/nraw/argokedro?branch=master
+
 
 .. |version| image:: https://img.shields.io/pypi/v/kedro-argo.svg
     :alt: PyPI Package latest release
