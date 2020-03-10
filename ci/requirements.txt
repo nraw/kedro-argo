@@ -4,7 +4,7 @@ setuptools>=18.0.1
 pytest-cov
 six>=1.12.0
 
-Click==7.0
+Click>=7.0
 Jinja2
 kedro>=0.15
 matrix==2.0.1

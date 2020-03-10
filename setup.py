@@ -71,8 +71,8 @@ setup(
     ],
     python_requires=">=3.6, <3.8",
     install_requires=[
-        "click",
-        "kedro",
+        "click>=7.0.0",
+        "kedro>=0.15.5",
         # eg: 'aspectlib==1.1.1', 'six>=1.7',
     ],
     extras_require={
