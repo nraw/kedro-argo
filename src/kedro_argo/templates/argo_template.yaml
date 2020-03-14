@@ -3,7 +3,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  generateName: argokedro-
+  generateName: #@ data.values.project_name + '-'
 spec:
   entrypoint: dag
   templates:
@@ -18,14 +18,14 @@ spec:
   - name: dag
     dag:
       tasks:
-      #@ for/end step in data.values.steps:
-      - name: #@ step.clean_name
+      #@ for/end task in data.values.tasks:
+      - name: #@ task.clean_name
         template: kedro
         dependencies:
-        #@ for/end dep in step.dep:
+        #@ for/end dep in task.dep:
         - #@ dep
 
         arguments:
           parameters:
           - name: kedro_node
-            value: #@ step.name
+            value: #@ task.name

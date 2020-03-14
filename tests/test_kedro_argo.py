@@ -43,8 +43,8 @@ def test_get_deps_dict(mock_named_pipe):
     dependencies = mock_named_pipe.node_dependencies
     deps_dict = get_deps_dict(dependencies)
     expected_deps_dict = [
-        {"name": "step_1", "clean_name": "step-1", "dep": []},
-        {"name": "step_2", "clean_name": "step-2", "dep": ["step-1"]},
+        {"node": "step_1", "name": "step-1", "dep": []},
+        {"node": "step_2", "name": "step-2", "dep": ["step-1"]},
     ]
     assert type(deps_dict) == list
     assert len(dependencies) == len(deps_dict)

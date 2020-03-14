@@ -29,7 +29,8 @@ def argokedro(image, templates_folder, force_template):
     deps_dict = get_deps_dict(dependencies)
     tags = get_tags(pipeline)
     tagged_deps_dict = update_deps_dict_with_tags(deps_dict, tags)
-    yaml_pipe = generate_yaml(tagged_deps_dict, image)
+    project_name = pc.project_name
+    yaml_pipe = generate_yaml(tagged_deps_dict, image, project_name)
     save_yaml(yaml_pipe, templates_folder)
     copy_template(templates_folder, force_template)
     logging.info("Templates saved in `templates` folder")
@@ -39,8 +40,8 @@ def argokedro(image, templates_folder, force_template):
 def get_deps_dict(dependencies):
     deps_dict = [
         {
-            "name": key.name,
-            "clean_name": clean_name(key.name),
+            "node": key.name,
+            "name": clean_name(key.name),
             "dep": [clean_name(val.name) for val in vals],
         }
         for key, vals in dependencies.items()
@@ -61,7 +62,7 @@ def get_tags(pipeline):
 
 def update_deps_dict_with_tags(deps_dict, tags):
     for dep_dict in deps_dict:
-        node_tags = tags[dep_dict["name"]]
+        node_tags = tags[dep_dict["node"]]
         tag_dict = parse_tags(node_tags)
         dep_dict.update(tag_dict)
     return deps_dict
@@ -81,8 +82,8 @@ def parse_tags(node_tags, sep="."):
         return {}
 
 
-def generate_yaml(deps_dict, image):
-    pipe_dict = {"steps": deps_dict, "image": image}
+def generate_yaml(deps_dict, image, project_name):
+    pipe_dict = {"tasks": deps_dict, "image": image, "project_name": project_name}
     yaml_pipe = yaml.safe_dump(pipe_dict)
     yaml_pipe = "#@data/values\n---\n" + yaml_pipe
     return yaml_pipe
