@@ -56,9 +56,9 @@ Kedro-Argo
     :alt: Supported implementations
     :target: https://pypi.org/project/kedro-argo
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/nraw/kedro-argo/v0.0.5.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/nraw/kedro-argo/v0.0.6.svg
     :alt: Commits since latest release
-    :target: https://github.com/nraw/kedro-argo/compare/v0.0.5...master
+    :target: https://github.com/nraw/kedro-argo/compare/v0.0.6...master
 
 
 
