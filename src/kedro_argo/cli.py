@@ -47,7 +47,8 @@ def argokedro(image, templates_folder, ytt, namespace):
         logging.info(f"YTT template saved in {templates_folder} folder")
     save_yaml(kedro_yaml, templates_folder)
     logging.info(f"Kedro template saved in {templates_folder} folder")
-    click.secho(FINISHED_MESSAGE)
+    if ytt:
+        click.secho(FINISHED_MESSAGE_YTT)
 
 
 def transform_parameters(parameters):
@@ -134,7 +135,7 @@ def get_source_template_filename(template_filename="argo_template.yaml"):
     return source_file
 
 
-FINISHED_MESSAGE = """
+FINISHED_MESSAGE_YTT = """
 You can now run:
 
 $ ytt -f templates > argo.yaml
