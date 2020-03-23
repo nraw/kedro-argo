@@ -17,10 +17,10 @@ def commands():
 
 @commands.command("argo")
 @click.argument("image", required=True)
-@click.argument("templates_folder", default="templates")
-@click.option("--ytt-template", default=False)
-@click.argument("namespace", default="", required=False)
-def argokedro(image, templates_folder, ytt_template, namespace):
+@click.option("-t", "--templates_folder", default="templates")
+@click.option("--ytt", default=False)
+@click.option("-n", "--namespace", default="")
+def argokedro(image, templates_folder, ytt, namespace):
     """Creates an argo pipeline yaml
     - https://get-ytt.io/#playground
     """
@@ -41,12 +41,12 @@ def argokedro(image, templates_folder, ytt_template, namespace):
         "namespace": namespace,
     }
     kedro_yaml = generate_yaml(kedro_dict)
-    if ytt_template:
+    if ytt:
         kedro_yaml = ytt_add_values_part(kedro_yaml)
-        copy_template(templates_folder, ytt_template)
-        logging.info(f"Template saved in {templates_folder} folder")
+        copy_template(templates_folder, ytt)
+        logging.info(f"YTT template saved in {templates_folder} folder")
     save_yaml(kedro_yaml, templates_folder)
-    logging.info(f"Template saved in {templates_folder} folder")
+    logging.info(f"Kedro template saved in {templates_folder} folder")
     click.secho(FINISHED_MESSAGE)
 
 
@@ -118,8 +118,8 @@ def save_yaml(kedro_yaml, templates_folder):
     Path(templates_folder + "/kedro.yaml").write_text(kedro_yaml)
 
 
-def copy_template(templates_folder, ytt_template):
-    if ytt_template:
+def copy_template(templates_folder, ytt):
+    if ytt:
         Path(templates_folder).mkdir(parents=True, exist_ok=True)
         template_filename = "argo_template.yaml"
         source_file = get_source_template_filename(template_filename)
