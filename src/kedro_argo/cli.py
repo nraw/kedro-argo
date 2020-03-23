@@ -17,24 +17,46 @@ def commands():
 
 @commands.command("argo")
 @click.argument("image", required=True)
-@click.argument("templates_folder", default="templates")
-@click.option("--force-template", default=False)
-def argokedro(image, templates_folder, force_template):
+@click.option("-t", "--templates_folder", default="templates")
+@click.option("--ytt", default=False)
+@click.option("-n", "--namespace", default="")
+def argokedro(image, templates_folder, ytt, namespace):
     """Creates an argo pipeline yaml
     - https://get-ytt.io/#playground
     """
     pc = cli.get_project_context()
     pipeline = pc.pipeline
+    project_name = pc.project_name
+    parameters = pc.catalog.load("parameters")
+    pretty_params = transform_parameters(parameters)
     dependencies = pipeline.node_dependencies
     deps_dict = get_deps_dict(dependencies)
     tags = get_tags(pipeline)
     tagged_deps_dict = update_deps_dict_with_tags(deps_dict, tags)
-    project_name = pc.project_name
-    yaml_pipe = generate_yaml(tagged_deps_dict, image, project_name)
-    save_yaml(yaml_pipe, templates_folder)
-    copy_template(templates_folder, force_template)
-    logging.info("Templates saved in `templates` folder")
-    click.secho(FINISHED_MESSAGE)
+    kedro_dict = {
+        "tasks": tagged_deps_dict,
+        "image": image,
+        "project_name": project_name,
+        "parameters": pretty_params,
+        "namespace": namespace,
+    }
+    kedro_yaml = generate_yaml(kedro_dict)
+    if ytt:
+        kedro_yaml = ytt_add_values_part(kedro_yaml)
+        copy_template(templates_folder, ytt)
+        logging.info(f"YTT template saved in {templates_folder} folder")
+    save_yaml(kedro_yaml, templates_folder)
+    logging.info(f"Kedro template saved in {templates_folder} folder")
+    if ytt:
+        click.secho(FINISHED_MESSAGE_YTT)
+
+
+def transform_parameters(parameters):
+    pretty_params = [
+        {"name": key, "default": value, "caption": key}
+        for key, value in parameters.items()
+    ]
+    return pretty_params
 
 
 def get_deps_dict(dependencies):
@@ -82,24 +104,29 @@ def parse_tags(node_tags, sep="."):
         return {}
 
 
-def generate_yaml(deps_dict, image, project_name):
-    pipe_dict = {"tasks": deps_dict, "image": image, "project_name": project_name}
-    yaml_pipe = yaml.safe_dump(pipe_dict)
-    yaml_pipe = "#@data/values\n---\n" + yaml_pipe
-    return yaml_pipe
+def generate_yaml(kedro_dict):
+    kedro_yaml = yaml.safe_dump(kedro_dict)
+    return kedro_yaml
 
 
-def save_yaml(yaml_pipe, templates_folder):
+def ytt_add_values_part(kedro_yaml):
+    kedro_yaml = "#@data/values\n---\n" + kedro_yaml
+    return kedro_yaml
+
+
+def save_yaml(kedro_yaml, templates_folder):
     Path(templates_folder).mkdir(parents=True, exist_ok=True)
-    Path(templates_folder + "/kedro.yaml").write_text(yaml_pipe)
+    Path(templates_folder + "/kedro.yaml").write_text(kedro_yaml)
 
 
-def copy_template(templates_folder, force_template):
-    template_filename = "argo_template.yaml"
-    source_file = get_source_template_filename(template_filename)
-    target_file = Path(templates_folder) / template_filename
-    if not target_file.exists() or force_template:
-        shutil.copy2(str(source_file), str(templates_folder))
+def copy_template(templates_folder, ytt):
+    if ytt:
+        Path(templates_folder).mkdir(parents=True, exist_ok=True)
+        template_filename = "argo_template.yaml"
+        source_file = get_source_template_filename(template_filename)
+        target_file = Path(templates_folder) / template_filename
+        if not target_file.exists():
+            shutil.copy2(str(source_file), str(templates_folder))
 
 
 def get_source_template_filename(template_filename="argo_template.yaml"):
@@ -108,7 +135,7 @@ def get_source_template_filename(template_filename="argo_template.yaml"):
     return source_file
 
 
-FINISHED_MESSAGE = """
+FINISHED_MESSAGE_YTT = """
 You can now run:
 
 $ ytt -f templates > argo.yaml
