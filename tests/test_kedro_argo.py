@@ -10,6 +10,7 @@ from kedro_argo.cli import commands
 from kedro_argo.cli import get_deps_dict
 from kedro_argo.cli import get_source_template_filename
 from kedro_argo.cli import get_tags
+from kedro_argo.cli import transform_parameters
 
 
 def identity(x):
@@ -39,6 +40,15 @@ def test_main():
     assert result.exit_code == 0
 
 
+def test_transform_parameters():
+    parameters = {"a": 1, "b": "c"}
+    expected_pretty_params = [
+        {"name": "a", "default": 1, "caption": "a"},
+        {"name": "b", "default": "c", "caption": "b"},
+    ]
+    assert transform_parameters(parameters) == expected_pretty_params
+
+
 def test_get_deps_dict(mock_named_pipe):
     dependencies = mock_named_pipe.node_dependencies
     deps_dict = get_deps_dict(dependencies)
@@ -51,6 +61,13 @@ def test_get_deps_dict(mock_named_pipe):
     assert deps_dict == expected_deps_dict
 
 
+def test_clean_name():
+    dirty_name = "hi_there[ a ] -> [b]"
+    cleaned_name = clean_name(dirty_name)
+    expected_name = "hi-there-a-b"
+    assert cleaned_name == expected_name
+
+
 def test_get_tags(mock_named_pipe):
     tags = get_tags(mock_named_pipe)
     expected_tags = {"step_1": {"argo.image.what"}, "step_2": {"argo.huh"}}
@@ -61,10 +78,3 @@ def test_get_tags(mock_named_pipe):
 def test_source_template_filename():
     source_file = get_source_template_filename()
     assert Path(source_file).exists()
-
-
-def test_clean_name():
-    dirty_name = "hi_there[ a ] -> [b]"
-    cleaned_name = clean_name(dirty_name)
-    expected_name = "hi-there-a-b"
-    assert cleaned_name == expected_name
