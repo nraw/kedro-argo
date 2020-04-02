@@ -18,11 +18,10 @@ def commands():
 @commands.command("argo")
 @click.argument("image", required=True)
 @click.option("-t", "--templates_folder", default="templates")
-@click.option("--ytt", default=False)
+@click.option("--ytt", is_flag=True)
 @click.option("-n", "--namespace", default="")
 def argokedro(image, templates_folder, ytt, namespace):
     """Creates an argo pipeline yaml
-    - https://get-ytt.io/#playground
     """
     pc = cli.get_project_context()
     pipeline = pc.pipeline
