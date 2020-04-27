@@ -11,7 +11,7 @@ Kedro-Argo
       - |docs|
     * - tests
       - | |travis| |appveyor| |requires|
-        | |codecov| |coveralls|
+        | |codecov|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
         | |commits-since|
@@ -34,10 +34,6 @@ Kedro-Argo
 .. |codecov| image:: https://codecov.io/github/nraw/kedro-argo/coverage.svg?branch=master
     :alt: Coverage Status
     :target: https://codecov.io/github/nraw/kedro-argo
-
-.. |coveralls| image:: https://coveralls.io/repos/github/nraw/argokedro/badge.svg?branch=master
-   :alt: Coveralls Status
-   :target: https://coveralls.io/github/nraw/argokedro?branch=master
 
 
 .. |version| image:: https://img.shields.io/pypi/v/kedro-argo.svg
@@ -66,6 +62,9 @@ Kedro-Argo
 
 Converting kedro pipelines to argo pipelines.
 
+.. image:: docs/images/kedro-argo.png
+  :width: 800
+
 * Free software: BSD 3-Clause License
 
 Installation
@@ -82,24 +81,56 @@ You can also install the in-development version with::
 Requirements
 ============
 
-To be used with Kedro, so it's assumed this package is used with a Kedro project.
-An image name is needed. You can generate one with Kedro-docker.
-Argo CLI is needed for the deployment step.
-As the workflow will be in Argo, all datasets should be somehow passed between containers or else the pipeline will fail.
+- To be used with Kedro, so it's assumed this package is used with a Kedro project.
+
+- Argo CLI is needed for the deployment step. It's also assumed that Argo is already installed on your kuberentes instance.
+
+- You must specify an image name as a parameter. You can generate the image using Kedro-docker.
+
+- As the workflow will be in Argo, which means every step will run in its own container. Therefore, all datasets should be somehow passed between containers or else the pipeline will fail. This means either all datasets should be saved externally (S3, Azure, etc.) or in a shared folder that your deployment would have access to.
 
 
 Usage
 ============
 
-When installed, argo should be visible under your kedro commands
+When installed, argo should be visible under your kedro commands, if you're in a kedro project
 ::
 
     kedro
 
-Get the kedro.yaml and the template file by running
-::
+Then you have two options for obtaining the yaml file, namely via Helm or via ytt.
+
+Helm
+----
+
+:: 
 
    kedro argo IMAGE_NAME
+
+Add this repository to your helm charts:
+::
+
+   helm repo add kedro-argo https://nraw.github.io/kedro-argo-helm/
+
+Then either directly install it by passing the kedro.yaml for input values
+::
+
+   helm install -f templates/kedro.yaml kedro-argo kedro-argo/kedro-argo
+
+Or clone it to your repository and change anything that you would still need:
+::
+
+   helm pull kedro-argo/kedro-argo --untar
+
+
+
+ytt
+---
+
+Get the kedro.yaml file by running
+::
+
+   kedro argo --ytt IMAGE_NAME
 
 
 You can now run:
