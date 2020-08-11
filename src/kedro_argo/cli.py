@@ -20,11 +20,12 @@ def commands():
 @click.option("-t", "--templates_folder", default="templates")
 @click.option("--ytt", is_flag=True)
 @click.option("-n", "--namespace", default="")
-def argokedro(image, templates_folder, ytt, namespace):
+@click.option("-p", "--pipeline", "selected_pipeline", default=None)
+def argokedro(image, templates_folder, ytt, namespace, selected_pipeline):
     """Creates an argo pipeline yaml
     """
     pc = cli.get_project_context()
-    pipeline = pc.pipeline
+    pipeline = get_selected_pipeline(pc, selected_pipeline)
     project_name = pc.project_name
     parameters = pc.catalog.load("parameters")
     pretty_params = transform_parameters(parameters)
@@ -48,6 +49,14 @@ def argokedro(image, templates_folder, ytt, namespace):
     logging.info(f"Kedro template saved in {templates_folder} folder")
     if ytt:
         click.secho(FINISHED_MESSAGE_YTT)
+
+
+def get_selected_pipeline(pc, selected_pipeline):
+    if selected_pipeline is not None:
+        pipeline = pc.pipelines.get(selected_pipeline)
+    else:
+        pipeline = pc.pipeline
+    return pipeline
 
 
 def transform_parameters(parameters):
