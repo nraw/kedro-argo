@@ -33,6 +33,12 @@ def mock_named_pipe():
     return mock_named_pipe
 
 
+@pytest.fixture
+def pipeline_dict(mock_pipe):
+    mock_pipelines = {"pipe1": mock_pipe, "pipe2": mock_pipe}
+    return mock_pipelines
+
+
 def test_main():
     runner = CliRunner()
     result = runner.invoke(commands, [])
