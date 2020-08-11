@@ -2,6 +2,11 @@
 Changelog
 =========
 
+0.0.9 (2020-08-11)
+------------------
+
+* Added option for selecting a specific pipeline with --pipeline command
+
 0.0.8 (2020-04-27)
 ------------------
 
