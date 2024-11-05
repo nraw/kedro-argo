@@ -2,6 +2,8 @@
 Kedro-Argo
 ==========
 
+Unmaintained. For more on how to contribute to Kedro and where to join discussions around it: https://docs.kedro.org/en/stable/contribution/index.html
+
 .. start-badges
 
 .. list-table::
@@ -10,7 +12,7 @@ Kedro-Argo
     * - docs
       - |docs|
     * - tests
-      - | |travis| |appveyor| |requires|
+      - | |appveyor|
         | |codecov|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
@@ -19,17 +21,9 @@ Kedro-Argo
     :target: https://readthedocs.org/projects/kedro-argo
     :alt: Documentation Status
 
-.. |travis| image:: https://api.travis-ci.org/nraw/kedro-argo.svg?branch=master
-    :alt: Travis-CI Build Status
-    :target: https://travis-ci.org/nraw/kedro-argo
-
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/nraw/kedro-argo?branch=master&svg=true
     :alt: AppVeyor Build Status
     :target: https://ci.appveyor.com/project/nraw/kedro-argo
-
-.. |requires| image:: https://requires.io/github/nraw/kedro-argo/requirements.svg?branch=master
-    :alt: Requirements Status
-    :target: https://requires.io/github/nraw/kedro-argo/requirements/?branch=master
 
 .. |codecov| image:: https://codecov.io/github/nraw/kedro-argo/coverage.svg?branch=master
     :alt: Coverage Status
