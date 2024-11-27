@@ -24,7 +24,7 @@ def read(*names, **kwargs):
 
 setup(
     name="kedro-argo",
-    version="0.0.9",
+    version="0.1.0",
     license="BSD-3-Clause",
     description="Converting kedro pipelines to argo pipelines.",
     long_description="%s\n%s"
@@ -69,10 +69,10 @@ setup(
     keywords=[
         # eg: 'keyword1', 'keyword2', 'keyword3',
     ],
-    python_requires=">=3.6, <3.8",
+    python_requires=">=3.6, <3.9",
     install_requires=[
         "click>=7.0.0",
-        "kedro>=0.15.5",
+        "kedro>=0.17.0",
         # eg: 'aspectlib==1.1.1', 'six>=1.7',
     ],
     extras_require={

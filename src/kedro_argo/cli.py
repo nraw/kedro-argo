@@ -6,8 +6,9 @@ from pathlib import Path
 import click
 import pkg_resources
 import yaml
-from kedro import cli
-
+from kedro.framework.session import KedroSession
+from kedro.framework.startup import _get_project_metadata 
+from kedro.framework.cli.utils import _add_src_to_path
 
 @click.group(name="ARGO")
 def commands():
@@ -24,9 +25,19 @@ def commands():
 def argokedro(image, templates_folder, ytt, namespace, selected_pipeline):
     """Creates an argo pipeline yaml
     """
-    pc = cli.get_project_context()
-    pipeline = get_selected_pipeline(pc, selected_pipeline)
-    project_name = pc.project_name
+
+    project_path = Path().cwd()
+    project_metadata = _get_project_metadata(project_path)
+    _add_src_to_path(project_metadata.source_dir, project_path)
+
+    with KedroSession.create(
+        package_name=project_metadata.package_name,
+        project_path=project_path
+    ) as session:
+        pc = session.load_context()
+        pipeline = get_selected_pipeline(pc, selected_pipeline)
+
+    project_name = project_metadata.project_name
     parameters = pc.catalog.load("parameters")
     pretty_params = transform_parameters(parameters)
     dependencies = pipeline.node_dependencies
